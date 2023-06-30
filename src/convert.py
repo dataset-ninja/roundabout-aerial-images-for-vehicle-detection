@@ -98,7 +98,7 @@ def convert_and_upload_supervisely_project(
     images_path = os.path.join(dataset_path, images_folder)
     images = os.listdir(images_path)
 
-    progress = tqdm("Create dataset {}".format(ds_name), len(images))
+    progress = tqdm(desc="Create dataset {}".format(ds_name), total=len(images))
     for batch_names in sly.batched(images, batch_size=batch_size):
         image_paths = [os.path.join(images_path, image_name) for image_name in batch_names]
         image_infos = api.image.upload_paths(dataset.id, batch_names, image_paths)
