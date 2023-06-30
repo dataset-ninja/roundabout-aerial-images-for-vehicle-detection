@@ -11,7 +11,7 @@ PROJECT_NAME_FULL: str = "Roundabout Aerial Images for Vehicle Detection"
 ##################################
 # * After uploading to instance ##
 ##################################
-LICENSE: License = License.CC_BY_NC_SA_4_0
+LICENSE: License = License.CC_BY_NC_SA_4_0()
 INDUSTRIES: List[Industry] = [Industry.AirDetection()]
 CV_TASKS: List[CVTask] = [CVTask.ObjectDetection()]
 ANNOTATION_TYPES: List[AnnotationType] = [AnnotationType.ObjectDetection()]
@@ -20,7 +20,7 @@ RELEASE_YEAR: int = 2022
 HOMEPAGE_URL: str = "https://www.kaggle.com/datasets/javiersanchezsoriano/roundabout-aerial-images-for-vehicle-detection"
 # e.g. "https://some.com/dataset/homepage"
 
-PREVIEW_IMAGE_ID: int = None
+PREVIEW_IMAGE_ID: int = 1418954
 # This should be filled AFTER uploading images to instance, just ID of any image.
 
 GITHUB_URL: str = "https://github.com/dataset-ninja/roundabout-aerial-images-for-vehicle-detection"

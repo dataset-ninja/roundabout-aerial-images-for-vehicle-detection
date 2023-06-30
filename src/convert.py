@@ -1,13 +1,14 @@
 import os
 import shutil
 import xml.etree.ElementTree as ET
+from collections import defaultdict, OrderedDict
 
 import supervisely as sly
-from dataset_tools.convert import unpack_if_archive
 from supervisely.io.fs import get_file_name
 from tqdm import tqdm
 
 import src.settings as s
+from dataset_tools.convert import unpack_if_archive
 
 
 def download_dataset(teamfiles_ds_path: str) -> str:
@@ -114,3 +115,52 @@ def convert_and_upload_supervisely_project(
     shutil.rmtree(dataset_path)
 
     return project
+
+
+def split_dataset_by_roundabout(api: sly.Api, project_info):
+    dataset = api.dataset.get_list(project_info.id)[0]
+    images = api.image.get_list(dataset.id)
+    splits = defaultdict(list)
+
+    def _get_split_name(num):
+        if num in range(1, 2):
+            return "scene_1"
+        elif num in range(2, 3):
+            return "scene_2"
+        elif num in range(3, 18):
+            return "scene_3"
+        elif num in range(18, 34):
+            return "scene_4"
+        elif num in range(34, 50):
+            return "scene_5"
+        elif num in range(50, 53):
+            return "scene_6"
+        elif num in range(53, 54):
+            return "scene_7"
+        elif num in range(54, 55):
+            return "scene_8"
+    for image in images:
+        split_name = _get_split_name(int(image.name.split("_")[0]))
+        splits[split_name].append(image)
+
+    sorted_splits = OrderedDict(sorted(splits.items()))
+    for split_name, split in sorted_splits.items():
+        split_dataset = api.dataset.create(project_info.id, split_name)
+
+        pbar = tqdm(
+            desc=f"Copying {len(split)} images to dataset {split_dataset.name}", total=len(split)
+        )
+        for batch in sly.batched(split, batch_size=500):
+            api.image.copy_batch_optimized(
+                dataset.id,
+                batch,
+                split_dataset.id,
+                with_annotations=True,
+                progress_cb=pbar.update,
+                batch_size=len(batch),
+            )
+
+    api.dataset.remove(dataset.id)
+    project_info = api.project.get_info_by_id(project_info.id)
+
+    return project_info
