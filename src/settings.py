@@ -5,8 +5,8 @@ from dataset_tools.templates import AnnotationType, CVTask, Industry, License
 ##################################
 # * Before uploading to instance #
 ##################################
-PROJECT_NAME: str = None
-PROJECT_NAME_FULL: str = None
+PROJECT_NAME: str = "Roundabout Aerial Images"
+PROJECT_NAME_FULL: str = "Roundabout Aerial Images for Vehicle Detection"
 
 ##################################
 # * After uploading to instance ##
