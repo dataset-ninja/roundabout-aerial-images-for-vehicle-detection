@@ -51,7 +51,7 @@ def convert_and_upload_supervisely_project(
     ann_ext = ".xml"
     batch_size = 30
 
-    def _create_ann(image_path, meta, name_to_class):
+    def _create_ann(image_path, name_to_class):
         labels = []
         tags = []
 
@@ -73,6 +73,7 @@ def convert_and_upload_supervisely_project(
             if obj_class_name not in name_to_class:
                 new_obj_class = sly.ObjClass(name=obj_class_name, geometry_type=sly.Rectangle)
                 name_to_class[obj_class_name] = new_obj_class
+                meta = sly.ProjectMeta.from_json(api.project.get_meta(project.id))
                 meta = meta.add_obj_class(new_obj_class)
                 api.project.update_meta(project.id, meta.to_json())
                 sly.logger.info(f"Added new class: {new_obj_class.name}")
@@ -92,7 +93,7 @@ def convert_and_upload_supervisely_project(
     project = api.project.create(workspace_id, project_name)
     meta = sly.ProjectMeta()
 
-    ds_name = os.path.basename(dataset_path)
+    ds_name = "ds0"
     dataset = api.dataset.create(project.id, ds_name)
 
     images_path = os.path.join(dataset_path, images_folder)
@@ -104,7 +105,7 @@ def convert_and_upload_supervisely_project(
         image_infos = api.image.upload_paths(dataset.id, batch_names, image_paths)
         img_ids = [im_info.id for im_info in image_infos]
 
-        anns = [_create_ann(image_path, meta, name_to_class) for image_path in image_paths]
+        anns = [_create_ann(image_path, name_to_class) for image_path in image_paths]
         api.annotation.upload_anns(img_ids, anns)
 
         progress.update(len(batch_names))
