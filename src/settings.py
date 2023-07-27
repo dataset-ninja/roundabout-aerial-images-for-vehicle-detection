@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional, Union
 
-from dataset_tools.templates import AnnotationType, CVTask, Industry, License
+from dataset_tools.templates import AnnotationType, CVTask, Industry, Domain, Research, License, Category
 
 ##################################
 # * Before uploading to instance #
@@ -12,11 +12,16 @@ PROJECT_NAME_FULL: str = "Roundabout Aerial Images for Vehicle Detection"
 # * After uploading to instance ##
 ##################################
 LICENSE: License = License.CC_BY_NC_SA_4_0()
-INDUSTRIES: List[Industry] = [Industry.AirDetection()]
+APPLICATIONS: List[Union[Industry, Domain, Research]] = [Domain.VehicleDetection()]
+CATEGORY: Category = Category.Aerial(extra=[Category.Drones(), Category.SelfDriving()])
+
 CV_TASKS: List[CVTask] = [CVTask.ObjectDetection()]
 ANNOTATION_TYPES: List[AnnotationType] = [AnnotationType.ObjectDetection()]
 
-RELEASE_YEAR: int = 2022
+RELEASE_DATE: Optional[str] = None  # e.g. "YYYY-MM-DD"
+if RELEASE_DATE is None:
+    RELEASE_YEAR: int = 2022
+
 HOMEPAGE_URL: str = "https://www.kaggle.com/datasets/javiersanchezsoriano/roundabout-aerial-images-for-vehicle-detection"
 # e.g. "https://some.com/dataset/homepage"
 
@@ -35,10 +40,19 @@ DOWNLOAD_ORIGINAL_URL: Optional[Union[str, dict]] = "https://www.kaggle.com/data
 CLASS2COLOR: Optional[Dict[str, List[str]]] = None
 # If specific colors for classes are needed, fill this dict (e.g. {"class1": [255, 0, 0], "class2": [0, 255, 0]})
 
-PAPER: Optional[str] = "Puertas, E.; De-Las-Heras, G.; Fernández-Andrés, J.; Sánchez-Soriano, J. Dataset: Roundabout Aerial Images for Vehicle Detection. Data 2022, 7, 47. https://doi.org/10.3390/data7040047"
+PAPER: Optional[str] = "https://www.mdpi.com/2306-5729/7/4/47"
 CITATION_URL: Optional[str] = "https://doi.org/10.3390/data7040047"
-ORGANIZATION_NAME: Optional[Union[str, List[str]]] = None
-ORGANIZATION_URL: Optional[Union[str, List[str]]] = None
+AUTHORS: Optional[List[str]] = [
+    "Enrique Puertas", 
+    "Gonzalo De-Las-Heras", 
+    "Javier Fernández-Andrés", 
+    "Javier Sánchez-Soriano"
+]
+
+ORGANIZATION_NAME: Optional[Union[str, List[str]]] = ["Universidad Europea de Madrid", "SICE Canada Inc., Toronto", "Universidad Francisco de Vitoria, Spain"]
+ORGANIZATION_URL: Optional[Union[str, List[str]]] = ["https://universidadeuropea.com/conocenos/madrid/", "https://www.sice.com/en", "https://www.ufv.es/"]
+
+SLYTAGSPLIT: Optional[Dict[str, List[str]]] = None
 TAGS: List[str] = None
 
 ##################################
@@ -53,10 +67,15 @@ def check_names():
 
 
 def get_settings():
+    if RELEASE_DATE is not None:
+        global RELEASE_YEAR
+        RELEASE_YEAR = int(RELEASE_DATE.split("-")[0])
+
     settings = {
         "project_name": PROJECT_NAME,
         "license": LICENSE,
-        "industries": INDUSTRIES,
+        "applications": APPLICATIONS,
+        "category": CATEGORY,
         "cv_tasks": CV_TASKS,
         "annotation_types": ANNOTATION_TYPES,
         "release_year": RELEASE_YEAR,
@@ -68,13 +87,16 @@ def get_settings():
     if any([field is None for field in settings.values()]):
         raise ValueError("Please fill all fields in settings.py after uploading to instance.")
 
+    settings["release_date"] = RELEASE_DATE
     settings["project_name_full"] = PROJECT_NAME_FULL or PROJECT_NAME
     settings["download_original_url"] = DOWNLOAD_ORIGINAL_URL
     settings["class2color"] = CLASS2COLOR
     settings["paper"] = PAPER
     settings["citation_url"] = CITATION_URL
+    settings["authors"] = AUTHORS
     settings["organization_name"] = ORGANIZATION_NAME
     settings["organization_url"] = ORGANIZATION_URL
-    settings["tags"] = TAGS if TAGS is not None else []
+    settings["slytagsplit"] = SLYTAGSPLIT
+    settings["tags"] = TAGS
 
     return settings
