@@ -1,6 +1,6 @@
 Dataset **Roundabout Aerial Images** can be downloaded in [Supervisely format](https://developer.supervisely.com/api-references/supervisely-annotation-json-format):
 
- [Download](https://assets.supervisely.com/supervisely-supervisely-assets-public/teams_storage/s/a/qS/6pT1h5lcQLdUscaNFFvNHoRQMDVXoMcTYjdH8aHSWGsThCJ5IVchkkX9af26RHa2B2X0i24lX0TSMyqJIiCQCs8vmx1PxBUwuvPzUY5rka68M11D9nw1qin4Rohm.tar)
+ [Download](https://assets.supervisely.com/supervisely-supervisely-assets-public/teams_storage/g/y/5A/4KZL5Foi3RItbm4va03k3fWmVs4GV7O3ZFlg0oiaxXMDA4YZmha2FSR9FtThyE06Whr9SesZBROW8XPj8KXictBZmJhU90KbrX3ph3rxG3aoPafBeiHKASQunBzy.tar)
 
 As an alternative, it can be downloaded with *dataset-tools* package:
 ``` bash
