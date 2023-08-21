@@ -1,166 +1,123 @@
+# https://www.kaggle.com/datasets/javiersanchezsoriano/roundabout-aerial-images-for-vehicle-detection
+
+import csv
 import os
-import shutil
-import xml.etree.ElementTree as ET
-from collections import defaultdict, OrderedDict
+from collections import defaultdict
 
 import supervisely as sly
-from supervisely.io.fs import get_file_name
-from tqdm import tqdm
+from dotenv import load_dotenv
+from supervisely.io.fs import get_file_name, get_file_name_with_ext
 
-import src.settings as s
-from dataset_tools.convert import unpack_if_archive
+# if sly.is_development():
+# load_dotenv("local.env")
+# load_dotenv(os.path.expanduser("~/supervisely.env"))
 
-
-def download_dataset(teamfiles_ds_path: str) -> str:
-    """Use it for large datasets to convert them on the instance"""
-    api = sly.Api.from_env()
-    team_id = sly.env.team_id()
-    storage_dir = sly.app.get_data_dir()
-
-    file_info = api.file.get_info_by_path(team_id, teamfiles_ds_path)
-    file_name_with_ext = file_info.name
-    local_path = os.path.join(storage_dir, file_name_with_ext)
-    dataset_path = os.path.splitext(local_path)[0]
-
-    if not os.path.exists(dataset_path):
-        sly.logger.info(f"Dataset dir '{dataset_path}' does not exist.")
-        if not os.path.exists(local_path):
-            sly.logger.info(f"Downloading archive '{teamfiles_ds_path}'...")
-            api.file.download(team_id, teamfiles_ds_path, local_path)
-
-        sly.logger.info(f"Start unpacking archive '{file_name_with_ext}'...")
-        path = unpack_if_archive(local_path)
-        sly.logger.info(f"Archive '{file_name_with_ext}' was unpacked successfully to: '{path}'.")
-        sly.logger.info(f"Dataset dir contains: '{os.listdir(path)}'.")
-        sly.fs.silent_remove(local_path)
-
-    else:
-        sly.logger.info(
-            f"Archive '{file_name_with_ext}' was already unpacked to '{dataset_path}'. Skipping..."
-        )
-    return dataset_path
+# api = sly.Api.from_env()
+# team_id = sly.env.team_id()
+# workspace_id = sly.env.workspace_id()
 
 
 def convert_and_upload_supervisely_project(
     api: sly.Api, workspace_id: int, project_name: str
 ) -> sly.ProjectInfo:
-    teamfiles_dir = "/4import/Roundabout Aerial Images for Vehicle Detection/archive.zip"
-    dataset_path = download_dataset(teamfiles_dir)
+    # project_name = "Roundabout Aerial Images"
+    dataset_path = "APP_DATA/archive"
+    batch_size = 30
+    ds_name = "ds"
 
     images_folder = "original/original/imgs"
-    annotations_folder = "original/original/annotations"
-    ann_ext = ".xml"
-    batch_size = 30
+    annotations_file = "data.csv"
+    tags_data_name = "roundabouts.csv"
+    img_height = 1080
+    img_wight = 1920
 
-    def _create_ann(image_path, name_to_class):
+    def create_ann(image_path):
         labels = []
-        tags = []
 
-        image_np = sly.imaging.image.read(image_path)[:, :, 0]
-        img_height = image_np.shape[0]
-        img_wight = image_np.shape[1]
+        file_name = get_file_name(image_path)
 
-        ann_folder = os.path.join(dataset_path, annotations_folder)
-        ann_name = get_file_name(image_path) + ann_ext
+        image_data = name_to_data.get(file_name)
+        if image_data is not None:
+            for curr_image_data in image_data:
+                obj_class = meta.get_obj_class(curr_image_data[1])
+                if obj_class is None:
+                    continue
+                bboxes = list(map(int, curr_image_data[0]))
 
-        ann_path = os.path.join(ann_folder, ann_name)
+                left = bboxes[0]
+                top = bboxes[1]
+                right = bboxes[2]
+                bottom = bboxes[3]
+                rect = sly.Rectangle(left=left, top=top, right=right, bottom=bottom)
+                label = sly.Label(rect, obj_class)
+                labels.append(label)
 
-        tree = ET.parse(ann_path)
-        root = tree.getroot()
+        scene = file_name.split("_")[0]
+        tag_data = scene_to_tags[scene]
+        id_roundabout = sly.Tag(tag_id, value=int(tag_data[0]))
+        lat = sly.Tag(tag_lat, value=float(tag_data[1]))
+        long_ = sly.Tag(tag_long, value=float(tag_data[2]))
+        height = sly.Tag(tag_height, value=int(tag_data[3]))
+        zoom = sly.Tag(tag_zoom, value=int(tag_data[4]))
 
-        ann_objects = root.findall(".//object")
-        for curr_object in ann_objects:
-            obj_class_name = curr_object[0].text
-            if obj_class_name not in name_to_class:
-                new_obj_class = sly.ObjClass(name=obj_class_name, geometry_type=sly.Rectangle)
-                name_to_class[obj_class_name] = new_obj_class
-                meta = sly.ProjectMeta.from_json(api.project.get_meta(project.id))
-                meta = meta.add_obj_class(new_obj_class)
-                api.project.update_meta(project.id, meta.to_json())
-                sly.logger.info(f"Added new class: {new_obj_class.name}")
-            obj_class = name_to_class[obj_class_name]
-            left = int(curr_object[4][0].text)
-            top = int(curr_object[4][1].text)
-            right = int(curr_object[4][2].text)
-            bottom = int(curr_object[4][3].text)
+        return sly.Annotation(
+            img_size=(img_height, img_wight),
+            labels=labels,
+            img_tags=[id_roundabout, lat, long_, height, zoom],
+        )
 
-            rect = sly.Rectangle(left=left, top=top, right=right, bottom=bottom)
-            label = sly.Label(rect, obj_class)
-            labels.append(label)
+    obj_class_car = sly.ObjClass("car", sly.Rectangle)
+    obj_class_cycle = sly.ObjClass("cycle", sly.Rectangle)
+    obj_class_truck = sly.ObjClass("truck", sly.Rectangle)
+    obj_class_bus = sly.ObjClass("bus", sly.Rectangle)
 
-        return sly.Annotation(img_size=(img_height, img_wight), labels=labels, img_tags=tags)
+    tag_id = sly.TagMeta("id roundabout", sly.TagValueType.ANY_NUMBER)
+    tag_lat = sly.TagMeta("lat", sly.TagValueType.ANY_NUMBER)
+    tag_long = sly.TagMeta("long", sly.TagValueType.ANY_NUMBER)
+    tag_height = sly.TagMeta("height", sly.TagValueType.ANY_NUMBER)
+    tag_zoom = sly.TagMeta("height with zoom", sly.TagValueType.ANY_NUMBER)
 
-    name_to_class = {}
-    project = api.project.create(workspace_id, project_name)
-    meta = sly.ProjectMeta()
+    project = api.project.create(workspace_id, project_name, change_name_if_conflict=True)
+    meta = sly.ProjectMeta(
+        obj_classes=[obj_class_car, obj_class_cycle, obj_class_truck, obj_class_bus],
+        tag_metas=[tag_id, tag_lat, tag_long, tag_height, tag_zoom],
+    )
+    api.project.update_meta(project.id, meta.to_json())
 
-    ds_name = "ds0"
-    dataset = api.dataset.create(project.id, ds_name)
+    dataset = api.dataset.create(project.id, ds_name, change_name_if_conflict=True)
 
     images_path = os.path.join(dataset_path, images_folder)
-    images = os.listdir(images_path)
+    anns_path = os.path.join(dataset_path, annotations_file)
+    tags_data_path = os.path.join(dataset_path, tags_data_name)
 
-    progress = tqdm(desc="Create dataset {}".format(ds_name), total=len(images))
-    for batch_names in sly.batched(images, batch_size=batch_size):
-        image_paths = [os.path.join(images_path, image_name) for image_name in batch_names]
-        image_infos = api.image.upload_paths(dataset.id, batch_names, image_paths)
-        img_ids = [im_info.id for im_info in image_infos]
+    name_to_data = defaultdict(list)
+    with open(anns_path, "r") as file:
+        csvreader = csv.reader(file)
+        for idx, row in enumerate(csvreader):
+            if idx != 0:
+                name_to_data[get_file_name(row[0])].append((row[1:-1], row[-1]))
 
-        anns = [_create_ann(image_path, name_to_class) for image_path in image_paths]
+    scene_to_tags = {}
+    with open(tags_data_path, "r") as file:
+        csvreader = csv.reader(file)
+        for idx, row in enumerate(csvreader):
+            if idx != 0:
+                scene_to_tags[get_file_name(row[0])] = row[1:]
+
+    images_names = os.listdir(images_path)
+
+    progress = sly.Progress("Create dataset {}".format(ds_name), len(images_names))
+
+    for images_names_batch in sly.batched(images_names, batch_size=batch_size):
+        img_pathes_batch = [
+            os.path.join(images_path, image_name) for image_name in images_names_batch
+        ]
+
+        img_infos = api.image.upload_paths(dataset.id, images_names_batch, img_pathes_batch)
+        img_ids = [im_info.id for im_info in img_infos]
+
+        anns = [create_ann(image_path) for image_path in img_pathes_batch]
         api.annotation.upload_anns(img_ids, anns)
 
-        progress.update(len(batch_names))
-
-    sly.logger.info("Deleting temporary app storage files...")
-    shutil.rmtree(dataset_path)
-
+        progress.iters_done_report(len(images_names_batch))
     return project
-
-
-def split_dataset_by_roundabout(api: sly.Api, project_info):
-    dataset = api.dataset.get_list(project_info.id)[0]
-    images = api.image.get_list(dataset.id)
-    splits = defaultdict(list)
-
-    def _get_split_name(num):
-        if num in range(1, 2):
-            return "scene_1"
-        elif num in range(2, 3):
-            return "scene_2"
-        elif num in range(3, 18):
-            return "scene_3"
-        elif num in range(18, 34):
-            return "scene_4"
-        elif num in range(34, 50):
-            return "scene_5"
-        elif num in range(50, 53):
-            return "scene_6"
-        elif num in range(53, 54):
-            return "scene_7"
-        elif num in range(54, 55):
-            return "scene_8"
-    for image in images:
-        split_name = _get_split_name(int(image.name.split("_")[0]))
-        splits[split_name].append(image)
-
-    sorted_splits = OrderedDict(sorted(splits.items()))
-    for split_name, split in sorted_splits.items():
-        split_dataset = api.dataset.create(project_info.id, split_name)
-
-        pbar = tqdm(
-            desc=f"Copying {len(split)} images to dataset {split_dataset.name}", total=len(split)
-        )
-        for batch in sly.batched(split, batch_size=500):
-            api.image.copy_batch_optimized(
-                dataset.id,
-                batch,
-                split_dataset.id,
-                with_annotations=True,
-                progress_cb=pbar.update,
-                batch_size=len(batch),
-            )
-
-    api.dataset.remove(dataset.id)
-    project_info = api.project.get_info_by_id(project_info.id)
-
-    return project_info

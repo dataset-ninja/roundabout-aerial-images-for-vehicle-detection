@@ -1,6 +1,14 @@
 from typing import Dict, List, Optional, Union
 
-from dataset_tools.templates import AnnotationType, CVTask, Industry, Domain, Research, License, Category
+from dataset_tools.templates import (
+    AnnotationType,
+    Category,
+    CVTask,
+    Domain,
+    Industry,
+    License,
+    Research,
+)
 
 ##################################
 # * Before uploading to instance #
@@ -13,7 +21,7 @@ PROJECT_NAME_FULL: str = "Roundabout Aerial Images for Vehicle Detection"
 ##################################
 LICENSE: License = License.CC_BY_NC_SA_4_0()
 APPLICATIONS: List[Union[Industry, Domain, Research]] = [Domain.VehicleDetection()]
-CATEGORY: Category = Category.Aerial(extra=[Category.Drones(), Category.SelfDriving()])
+CATEGORY: Category = Category.Aerial(extra=Category.Drones())
 
 CV_TASKS: List[CVTask] = [CVTask.ObjectDetection()]
 ANNOTATION_TYPES: List[AnnotationType] = [AnnotationType.ObjectDetection()]
@@ -34,7 +42,9 @@ GITHUB_URL: str = "https://github.com/dataset-ninja/roundabout-aerial-images-for
 ##################################
 ### * Optional after uploading ###
 ##################################
-DOWNLOAD_ORIGINAL_URL: Optional[Union[str, dict]] = "https://www.kaggle.com/datasets/javiersanchezsoriano/roundabout-aerial-images-for-vehicle-detection/download?datasetVersionNumber=2"
+DOWNLOAD_ORIGINAL_URL: Optional[
+    Union[str, dict]
+] = "https://www.kaggle.com/datasets/javiersanchezsoriano/roundabout-aerial-images-for-vehicle-detection/download?datasetVersionNumber=2"
 # Optional link for downloading original dataset (e.g. "https://some.com/dataset/download")
 
 CLASS2COLOR: Optional[Dict[str, List[str]]] = None
@@ -43,16 +53,26 @@ CLASS2COLOR: Optional[Dict[str, List[str]]] = None
 PAPER: Optional[str] = "https://www.mdpi.com/2306-5729/7/4/47"
 CITATION_URL: Optional[str] = "https://doi.org/10.3390/data7040047"
 AUTHORS: Optional[List[str]] = [
-    "Enrique Puertas", 
-    "Gonzalo De-Las-Heras", 
-    "Javier Fernández-Andrés", 
-    "Javier Sánchez-Soriano"
+    "Enrique Puertas",
+    "Gonzalo De-Las-Heras",
+    "Javier Fernández-Andrés",
+    "Javier Sánchez-Soriano",
 ]
 
-ORGANIZATION_NAME: Optional[Union[str, List[str]]] = ["Universidad Europea de Madrid", "SICE Canada Inc., Toronto", "Universidad Francisco de Vitoria, Spain"]
-ORGANIZATION_URL: Optional[Union[str, List[str]]] = ["https://universidadeuropea.com/conocenos/madrid/", "https://www.sice.com/en", "https://www.ufv.es/"]
+ORGANIZATION_NAME: Optional[Union[str, List[str]]] = [
+    "Universidad Europea de Madrid",
+    "SICE Canada Inc., Toronto",
+    "Universidad Francisco de Vitoria, Spain",
+]
+ORGANIZATION_URL: Optional[Union[str, List[str]]] = [
+    "https://universidadeuropea.com/conocenos/madrid/",
+    "https://www.sice.com/en",
+    "https://www.ufv.es/",
+]
 
-SLYTAGSPLIT: Optional[Dict[str, List[str]]] = None
+SLYTAGSPLIT: Optional[Dict[str, List[str]]] = {
+    "__POSTTEXT__": "Additionally, the meta data about <span style='background-color: #ecdefc; padding: 2px 4px; border-radius: 4px;'>roundabout id</span> (8 unique roundabouts), Drone's ***lattitude*** and ***longitude*** , height and height with zoom is provided"
+}
 TAGS: List[str] = None
 
 ##################################
