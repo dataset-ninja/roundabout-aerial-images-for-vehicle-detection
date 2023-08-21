@@ -34,7 +34,7 @@ if RELEASE_DATE is None:
 HOMEPAGE_URL: str = "https://www.kaggle.com/datasets/javiersanchezsoriano/roundabout-aerial-images-for-vehicle-detection"
 # e.g. "https://some.com/dataset/homepage"
 
-PREVIEW_IMAGE_ID: int = 1418954
+PREVIEW_IMAGE_ID: int = 2143961
 # This should be filled AFTER uploading images to instance, just ID of any image.
 
 GITHUB_URL: str = "https://github.com/dataset-ninja/roundabout-aerial-images-for-vehicle-detection"
@@ -48,7 +48,12 @@ DOWNLOAD_ORIGINAL_URL: Optional[
 ] = "https://www.kaggle.com/datasets/javiersanchezsoriano/roundabout-aerial-images-for-vehicle-detection/download?datasetVersionNumber=2"
 # Optional link for downloading original dataset (e.g. "https://some.com/dataset/download")
 
-CLASS2COLOR: Optional[Dict[str, List[str]]] = None
+CLASS2COLOR: Optional[Dict[str, List[str]]] = {
+    "car": [230, 25, 75],
+    "cycle": [60, 180, 75],
+    "truck": [255, 225, 25],
+    "bus": [0, 130, 200],
+}
 # If specific colors for classes are needed, fill this dict (e.g. {"class1": [255, 0, 0], "class2": [0, 255, 0]})
 
 PAPER: Optional[str] = "https://www.mdpi.com/2306-5729/7/4/47"
@@ -72,7 +77,7 @@ ORGANIZATION_URL: Optional[Union[str, List[str]]] = [
 ]
 
 SLYTAGSPLIT: Optional[Dict[str, List[str]]] = {
-    "__POSTTEXT__": "Additionally, the meta data about <span style='background-color: #ecdefc; padding: 2px 4px; border-radius: 4px;'>roundabout id</span> (8 unique roundabouts), Drone's ***lattitude*** and ***longitude*** , height and height with zoom is provided"
+    "__POSTTEXT__": "Additionally, the meta data about ***roundabout id*** (8 unique roundabouts), Drone's ***lattitude*** and ***longitude***, its ***height*** of exposure and ***height with zoom*** is provided"
 }
 TAGS: List[str] = None
 
