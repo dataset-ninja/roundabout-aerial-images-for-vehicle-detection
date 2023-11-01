@@ -14,7 +14,7 @@ The authors of the **Roundabout Aerial Images for Vehicle Detection** dataset ha
 | Data augmentation (*)         | x4               | x4                | x4              | x4               | x4              | x4              |
 | **Total**               | **61,896** | **947,400** | **9,048** | **19,596** | **7,008** | **2,208** |
 
-(*) Data augmentation: Augmented data is available in the first version of the dataset.
+<span style="font-size: smaller; font-style: italic;">(*) Data augmentation: Augmented data is available in the first version of the dataset.</span>
 
 Given the meticulous nature of image annotation, the authors employed an effective methodology to streamline the process which minimizes manual annotation efforts. This involves annotating a limited number of images to train Convolutional Neural Network (CNN) models capable of auto-annotating additional cases. Although these auto-annotations necessitate review, this approach reduces the need for extensive manual work. To further enhance dataset diversity without additional annotation, the authors applied data augmentation techniques, generating apparent new images.
 
